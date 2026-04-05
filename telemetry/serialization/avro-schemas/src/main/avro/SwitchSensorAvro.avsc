@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "SwitchSensorAvro",
+  "namespace": "ru.yandex.practicum.kafka.telemetry.event",
+  "fields": [
+    {
+      "name": "state",
+      "type": "boolean"
+    }
+  ]
+}

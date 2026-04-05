@@ -2,13 +2,16 @@
 chcp 65001 >nul
 setlocal
 
+call "%~dp0java21-env.bat"
+if errorlevel 1 exit /b 1
+
 REM Локальный запуск тестов Hub Router для проверки сервиса Collector
 
 set "JAR_PATH=%~dp0..\hub-router.jar"
 
 if "%1"=="info" (
   echo.
-  java -jar "%JAR_PATH%" info
+  "%JAVA_EXE%" -jar "%JAR_PATH%" info
   echo.
   pause
   exit /b
@@ -17,9 +20,11 @@ if "%1"=="info" (
 echo "Запуск Hub Router (режим: COLLECTION, HTTP)"
 echo.
 
-java -jar "%JAR_PATH%" ^
+"%JAVA_EXE%" -jar "%JAR_PATH%" ^
   --hub-router.execution.mode=COLLECTION ^
   --hub-router.execution.collector.mode=http ^
+  --hub-router.execution.collector.port=8080 ^
+  --grpc.server.port=0 ^
   --hub-router.execution.immediate-logging.enabled=false ^
   --hub-router.execution.output.info-enabled=true ^
   --hub-router.execution.output.trace-enabled=true ^
