@@ -31,7 +31,6 @@ public abstract class SensorEvent {
 
     private Instant timestamp;
 
-    // Jackson смотрит на поле type и сам выбирает нужный подкласс события.
     @NotNull
     private SensorEventType type;
 
