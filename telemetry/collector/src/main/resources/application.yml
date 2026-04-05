@@ -12,3 +12,5 @@ collector:
   topics:
     sensors: telemetry.sensors.v1
     hubs: telemetry.hubs.v1
+    partitions: 1
+    replicas: 1

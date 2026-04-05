@@ -37,9 +37,16 @@ public class KafkaConfig {
 
     @Bean
     public KafkaAdmin.NewTopics collectorTopics(CollectorTopicsProperties topicsProperties) {
+        // обрабатываем через конфиг
         return new KafkaAdmin.NewTopics(
-                TopicBuilder.name(topicsProperties.getSensors()).partitions(1).replicas(1).build(),
-                TopicBuilder.name(topicsProperties.getHubs()).partitions(1).replicas(1).build()
+                TopicBuilder.name(topicsProperties.getSensors())
+                        .partitions(topicsProperties.getPartitions())
+                        .replicas(topicsProperties.getReplicas())
+                        .build(),
+                TopicBuilder.name(topicsProperties.getHubs())
+                        .partitions(topicsProperties.getPartitions())
+                        .replicas(topicsProperties.getReplicas())
+                        .build()
         );
     }
 }

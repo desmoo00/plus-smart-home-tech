@@ -7,6 +7,8 @@ public class CollectorTopicsProperties {
 
     private String sensors = "telemetry.sensors.v1";
     private String hubs = "telemetry.hubs.v1";
+    private int partitions = 1;
+    private short replicas = 1;
 
     public String getSensors() {
         return sensors;
@@ -22,5 +24,21 @@ public class CollectorTopicsProperties {
 
     public void setHubs(String hubs) {
         this.hubs = hubs;
+    }
+
+    public int getPartitions() {
+        return partitions;
+    }
+
+    public void setPartitions(int partitions) {
+        this.partitions = partitions;
+    }
+
+    public short getReplicas() {
+        return replicas;
+    }
+
+    public void setReplicas(short replicas) {
+        this.replicas = replicas;
     }
 }

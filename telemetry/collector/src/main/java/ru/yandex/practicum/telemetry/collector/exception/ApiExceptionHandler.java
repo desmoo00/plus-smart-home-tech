@@ -14,38 +14,39 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleUnreadableJson(HttpMessageNotReadableException exception) {
+    public ResponseEntity<ErrorResponse> handleUnreadableJson(HttpMessageNotReadableException exception) {
         return ResponseEntity.badRequest().body(errorBody("Bad request body"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException exception) {
-        Map<String, Object> body = errorBody("Validation failed");
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException exception) {
+        // собираем ошибки по полям, чтобы клиенту было проще понять причину валидации
         Map<String, String> fields = new HashMap<>();
 
         for (FieldError error : exception.getBindingResult().getFieldErrors()) {
             fields.put(error.getField(), error.getDefaultMessage());
         }
 
-        body.put("fields", fields);
-        return ResponseEntity.badRequest().body(body);
+        return ResponseEntity.badRequest().body(errorBody("Validation failed", fields));
     }
 
     @ExceptionHandler(KafkaPublishException.class)
-    public ResponseEntity<Map<String, Object>> handleKafkaPublish(KafkaPublishException exception) {
+    public ResponseEntity<ErrorResponse> handleKafkaPublish(KafkaPublishException exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorBody("Could not save event to Kafka"));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleUnexpected(Exception exception) {
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorBody("Unexpected server error"));
     }
 
-    private Map<String, Object> errorBody(String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("message", message);
-        return body;
+    private ErrorResponse errorBody(String message) {
+        return new ErrorResponse(message);
+    }
+
+    private ErrorResponse errorBody(String message, Map<String, String> fields) {
+        return new ErrorResponse(message, fields);
     }
 }
