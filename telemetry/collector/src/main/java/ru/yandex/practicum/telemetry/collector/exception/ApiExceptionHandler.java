@@ -49,4 +49,27 @@ public class ApiExceptionHandler {
     private ErrorResponse errorBody(String message, Map<String, String> fields) {
         return new ErrorResponse(message, fields);
     }
+
+    public static class ErrorResponse {
+
+        private final String message;
+        private final Map<String, String> fields;
+
+        public ErrorResponse(String message) {
+            this(message, null);
+        }
+
+        public ErrorResponse(String message, Map<String, String> fields) {
+            this.message = message;
+            this.fields = fields;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Map<String, String> getFields() {
+            return fields;
+        }
+    }
 }
