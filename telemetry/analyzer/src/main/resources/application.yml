@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: analyzer
+  datasource:
+    url: jdbc:postgresql://localhost:5432/smart-home
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+
+analyzer:
+  kafka:
+    poll-timeout: 5s
+    properties:
+      bootstrap.servers: localhost:9092
+      enable.auto.commit: false
+      auto.offset.reset: earliest
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+    topics:
+      snapshots: telemetry.snapshots.v1
+      hubs: telemetry.hubs.v1
+    consumers:
+      snapshots:
+        group-id: analyzer-snapshots
+        properties:
+          max.poll.records: 20
+          max.partition.fetch.bytes: 1048576
+      hubs:
+        group-id: analyzer-hub-events
+        properties:
+          max.poll.records: 10
+
+grpc:
+  client:
+    hub-router:
+      address: "static://localhost:59090"
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext

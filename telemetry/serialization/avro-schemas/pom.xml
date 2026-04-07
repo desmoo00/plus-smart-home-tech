@@ -52,6 +52,7 @@
                                 <import>${project.basedir}/src/main/avro/MotionSensorAvro.avsc</import>
                                 <import>${project.basedir}/src/main/avro/SwitchSensorAvro.avsc</import>
                                 <import>${project.basedir}/src/main/avro/TemperatureSensorAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/HubSnapshotAvro.avsc</import>
                             </imports>
                         </configuration>
                     </execution>
