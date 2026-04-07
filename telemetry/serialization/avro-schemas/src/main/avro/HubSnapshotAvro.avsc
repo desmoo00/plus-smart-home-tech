@@ -1,0 +1,31 @@
+{
+  "type": "record",
+  "name": "HubSnapshotAvro",
+  "namespace": "ru.yandex.practicum.kafka.telemetry.event",
+  "fields": [
+    {
+      "name": "hubId",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "sensorsState",
+      "type": {
+        "type": "map",
+        "values": [
+          "ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro",
+          "ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro",
+          "ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro",
+          "ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro",
+          "ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro"
+        ]
+      }
+    }
+  ]
+}
