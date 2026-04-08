@@ -2,5 +2,86 @@ syntax = "proto3";
 
 package telemetry.message.event;
 
+import "google/protobuf/timestamp.proto";
+
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
+
+enum DeviceTypeProto {
+  DEVICE_TYPE_PROTO_UNSPECIFIED = 0;
+  MOTION_SENSOR = 1;
+  TEMPERATURE_SENSOR = 2;
+  LIGHT_SENSOR = 3;
+  CLIMATE_SENSOR = 4;
+  SWITCH_SENSOR = 5;
+}
+
+enum ConditionTypeProto {
+  CONDITION_TYPE_PROTO_UNSPECIFIED = 0;
+  MOTION = 1;
+  LUMINOSITY = 2;
+  SWITCH = 3;
+  TEMPERATURE = 4;
+  CO2LEVEL = 5;
+  HUMIDITY = 6;
+}
+
+enum ConditionOperationProto {
+  CONDITION_OPERATION_PROTO_UNSPECIFIED = 0;
+  EQUALS = 1;
+  GREATER_THAN = 2;
+  LOWER_THAN = 3;
+}
+
+enum ActionTypeProto {
+  ACTION_TYPE_PROTO_UNSPECIFIED = 0;
+  ACTIVATE = 1;
+  DEACTIVATE = 2;
+  INVERSE = 3;
+  SET_VALUE = 4;
+}
+
+message DeviceAddedProto {
+  string id = 1;
+  DeviceTypeProto type = 2;
+}
+
+message DeviceRemovedProto {
+  string id = 1;
+}
+
+message ScenarioConditionProto {
+  string sensor_id = 1;
+  ConditionTypeProto type = 2;
+  ConditionOperationProto operation = 3;
+  optional int32 int_value = 4;
+  optional bool bool_value = 5;
+}
+
+message DeviceActionProto {
+  string sensor_id = 1;
+  ActionTypeProto type = 2;
+  optional int32 value = 3;
+}
+
+message ScenarioAddedProto {
+  string name = 1;
+  repeated ScenarioConditionProto conditions = 2;
+  repeated DeviceActionProto actions = 3;
+}
+
+message ScenarioRemovedProto {
+  string name = 1;
+}
+
+message HubEventProto {
+  string hub_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+
+  oneof payload {
+    DeviceAddedProto device_added = 3;
+    DeviceRemovedProto device_removed = 4;
+    ScenarioAddedProto scenario_added = 5;
+    ScenarioRemovedProto scenario_removed = 6;
+  }
+}
