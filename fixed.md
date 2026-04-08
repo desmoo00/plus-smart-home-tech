@@ -1,2 +1,0 @@
-- Replaced the external proxy GitHub workflow with a local copy that still reuses upstream CI helpers but uses a repository-owned telemetry startup step.
-- Added `.github/workflows/scripts/start-telemetry.sh` to validate service startup by PID and port readiness instead of the flaky upstream `pgrep -f "$jar_path"` check.
