@@ -1,0 +1,2 @@
+- Added the `telemetry/aggregator` module and wired it into the `telemetry` Maven reactor.
+- Added Avro schemas for sensor state snapshots used by Aggregator.
