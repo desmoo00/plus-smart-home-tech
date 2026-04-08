@@ -1,4 +1,4 @@
-- Switched `telemetry/collector` from REST endpoints to the gRPC-based Collector implementation from task `2-collector-grpc`.
 - Added the `telemetry/aggregator` module and wired it into the `telemetry` Maven reactor.
-- Added Avro schemas for sensor state snapshots and adapted Analyzer to consume the new snapshot format.
-- Stabilized `telemetry/serialization/proto-schemas` on Windows by keeping `xolstice` protobuf generation, adding explicit outer class names, and excluding `proto-google-common-protos` from `grpc-protobuf`.
+- Added Avro schemas for sensor state snapshots used by Aggregator.
+- Replaced the external proxy GitHub workflow with a local copy that still reuses upstream CI helpers but uses a repository-owned telemetry startup step.
+- Added `.github/workflows/scripts/start-telemetry.sh` to validate service startup by PID and port readiness instead of the flaky upstream `pgrep -f "$jar_path"` check.
