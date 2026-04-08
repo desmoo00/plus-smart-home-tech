@@ -6,9 +6,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.kafka.telemetry.event.HubSnapshotAvro;
 import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 import ru.yandex.practicum.telemetry.analyzer.model.Action;
 import ru.yandex.practicum.telemetry.analyzer.model.ActionType;
@@ -44,18 +45,24 @@ class ScenarioEvaluatorTest {
                 new Action(ActionType.ACTIVATE, null)
         ));
 
-        HubSnapshotAvro snapshot = HubSnapshotAvro.newBuilder()
+        SensorsSnapshotAvro snapshot = SensorsSnapshotAvro.newBuilder()
                 .setHubId("hub-1")
                 .setTimestamp(Instant.parse("2026-04-07T10:15:30Z"))
                 .setSensorsState(Map.of(
-                        "motion-1", MotionSensorAvro.newBuilder()
-                                .setLinkQuality(100)
-                                .setMotion(true)
-                                .setVoltage(220)
+                        "motion-1", SensorStateAvro.newBuilder()
+                                .setTimestamp(Instant.parse("2026-04-07T10:15:00Z"))
+                                .setData(MotionSensorAvro.newBuilder()
+                                        .setLinkQuality(100)
+                                        .setMotion(true)
+                                        .setVoltage(220)
+                                        .build())
                                 .build(),
-                        "light-1", LightSensorAvro.newBuilder()
-                                .setLinkQuality(90)
-                                .setLuminosity(120)
+                        "light-1", SensorStateAvro.newBuilder()
+                                .setTimestamp(Instant.parse("2026-04-07T10:14:00Z"))
+                                .setData(LightSensorAvro.newBuilder()
+                                        .setLinkQuality(90)
+                                        .setLuminosity(120)
+                                        .build())
                                 .build()
                 ))
                 .build();
@@ -82,16 +89,19 @@ class ScenarioEvaluatorTest {
                 new Action(ActionType.ACTIVATE, null)
         ));
 
-        HubSnapshotAvro snapshot = HubSnapshotAvro.newBuilder()
+        SensorsSnapshotAvro snapshot = SensorsSnapshotAvro.newBuilder()
                 .setHubId("hub-1")
                 .setTimestamp(Instant.parse("2026-04-07T10:15:30Z"))
                 .setSensorsState(Map.of(
-                        "temperature-1", TemperatureSensorAvro.newBuilder()
-                                .setId("temperature-1")
-                                .setHubId("hub-1")
+                        "temperature-1", SensorStateAvro.newBuilder()
                                 .setTimestamp(Instant.parse("2026-04-07T10:00:00Z"))
-                                .setTemperatureC(22)
-                                .setTemperatureF(71)
+                                .setData(TemperatureSensorAvro.newBuilder()
+                                        .setId("temperature-1")
+                                        .setHubId("hub-1")
+                                        .setTimestamp(Instant.parse("2026-04-07T10:00:00Z"))
+                                        .setTemperatureC(22)
+                                        .setTemperatureF(71)
+                                        .build())
                                 .build()
                 ))
                 .build();

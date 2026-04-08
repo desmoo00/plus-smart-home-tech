@@ -3,7 +3,7 @@ package ru.yandex.practicum.telemetry.analyzer.service;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.kafka.telemetry.event.HubSnapshotAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.telemetry.analyzer.model.Scenario;
 import ru.yandex.practicum.telemetry.analyzer.repository.ScenarioRepository;
 
@@ -23,7 +23,7 @@ public class SnapshotService {
     }
 
     @Transactional(readOnly = true)
-    public void handle(HubSnapshotAvro snapshot) {
+    public void handle(SensorsSnapshotAvro snapshot) {
         List<Scenario> scenarios = scenarioRepository.findByHubId(snapshot.getHubId());
         scenarioEvaluator.evaluate(snapshot, scenarios)
                 .forEach(hubRouterActionService::execute);

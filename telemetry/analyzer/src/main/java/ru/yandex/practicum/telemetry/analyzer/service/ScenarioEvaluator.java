@@ -7,9 +7,10 @@ import java.util.Map;
 import java.util.OptionalInt;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.HubSnapshotAvro;
 import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 import ru.yandex.practicum.telemetry.analyzer.model.ConditionOperation;
@@ -20,12 +21,12 @@ import ru.yandex.practicum.telemetry.analyzer.model.ScenarioConditionLink;
 @Component
 public class ScenarioEvaluator {
 
-    public List<ScenarioActionCommand> evaluate(HubSnapshotAvro snapshot, List<Scenario> scenarios) {
+    public List<ScenarioActionCommand> evaluate(SensorsSnapshotAvro snapshot, List<Scenario> scenarios) {
         if (snapshot == null || scenarios == null || scenarios.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Map<String, Object> sensorsState = snapshot.getSensorsState();
+        Map<String, SensorStateAvro> sensorsState = snapshot.getSensorsState();
         List<ScenarioActionCommand> commands = new LinkedList<>();
 
         for (Scenario scenario : scenarios) {
@@ -54,12 +55,13 @@ public class ScenarioEvaluator {
         return commands;
     }
 
-    private boolean matches(ScenarioConditionLink link, Map<String, Object> sensorsState) {
-        Object state = sensorsState.get(link.getSensor().getId());
-        if (state == null) {
+    private boolean matches(ScenarioConditionLink link, Map<String, SensorStateAvro> sensorsState) {
+        SensorStateAvro sensorState = sensorsState.get(link.getSensor().getId());
+        if (sensorState == null) {
             return false;
         }
 
+        Object state = sensorState.getData();
         OptionalInt actualValue = extractValue(link.getCondition().getType(), state);
         return actualValue.isPresent() && compare(
                 actualValue.getAsInt(),

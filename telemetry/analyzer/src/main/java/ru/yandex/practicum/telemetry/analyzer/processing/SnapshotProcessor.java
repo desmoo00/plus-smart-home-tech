@@ -10,7 +10,7 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.kafka.telemetry.event.HubSnapshotAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.telemetry.analyzer.config.AnalyzerKafkaProperties;
 import ru.yandex.practicum.telemetry.analyzer.kafka.AnalyzerConsumerFactory;
 import ru.yandex.practicum.telemetry.analyzer.kafka.HubSnapshotDeserializer;
@@ -47,7 +47,7 @@ public class SnapshotProcessor {
             while (running.get()) {
                 ConsumerRecords<String, byte[]> records = consumer.poll(pollTimeout);
                 for (ConsumerRecord<String, byte[]> record : records) {
-                    HubSnapshotAvro snapshot = deserializer.deserialize(record.value());
+                    SensorsSnapshotAvro snapshot = deserializer.deserialize(record.value());
                     snapshotService.handle(snapshot);
                 }
                 if (!records.isEmpty()) {

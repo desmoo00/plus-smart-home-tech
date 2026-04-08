@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
+option java_outer_classname = "HubEventProtoOuterClass";
 
 enum DeviceTypeProto {
   DEVICE_TYPE_PROTO_UNSPECIFIED = 0;
