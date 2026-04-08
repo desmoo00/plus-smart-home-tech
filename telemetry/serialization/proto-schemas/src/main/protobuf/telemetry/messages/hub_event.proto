@@ -55,8 +55,10 @@ message ScenarioConditionProto {
   string sensor_id = 1;
   ConditionTypeProto type = 2;
   ConditionOperationProto operation = 3;
-  optional int32 int_value = 4;
-  optional bool bool_value = 5;
+  oneof value {
+    bool bool_value = 4;
+    int32 int_value = 5;
+  }
 }
 
 message DeviceActionProto {
