@@ -4,8 +4,12 @@ import com.google.protobuf.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.ConditionOperationProto;
+import ru.yandex.practicum.grpc.telemetry.event.ConditionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioConditionProto;
 import ru.yandex.practicum.telemetry.collector.model.hub.ActionType;
 import ru.yandex.practicum.telemetry.collector.model.hub.ConditionOperation;
@@ -42,7 +46,7 @@ public class GrpcHubEventMapper {
         DeviceAddedEvent event = new DeviceAddedEvent();
         event.setType(HubEventType.DEVICE_ADDED);
         event.setId(request.getDeviceAdded().getId());
-        event.setDeviceType(DeviceType.valueOf(request.getDeviceAdded().getType().name()));
+        event.setDeviceType(mapDeviceType(request.getDeviceAdded().getType()));
         return event;
     }
 
@@ -78,8 +82,8 @@ public class GrpcHubEventMapper {
     private ScenarioCondition mapCondition(ScenarioConditionProto conditionProto) {
         ScenarioCondition condition = new ScenarioCondition();
         condition.setSensorId(conditionProto.getSensorId());
-        condition.setType(ConditionType.valueOf(conditionProto.getType().name()));
-        condition.setOperation(ConditionOperation.valueOf(conditionProto.getOperation().name()));
+        condition.setType(mapConditionType(conditionProto.getType()));
+        condition.setOperation(mapConditionOperation(conditionProto.getOperation()));
         if (conditionProto.hasIntValue()) {
             condition.setValue(conditionProto.getIntValue());
         } else if (conditionProto.hasBoolValue()) {
@@ -97,11 +101,57 @@ public class GrpcHubEventMapper {
     private DeviceAction mapAction(DeviceActionProto actionProto) {
         DeviceAction action = new DeviceAction();
         action.setSensorId(actionProto.getSensorId());
-        action.setType(ActionType.valueOf(actionProto.getType().name()));
+        action.setType(mapActionType(actionProto.getType()));
         if (actionProto.hasValue()) {
             action.setValue(actionProto.getValue());
         }
         return action;
+    }
+
+    private DeviceType mapDeviceType(DeviceTypeProto typeProto) {
+        return switch (typeProto) {
+            case MOTION_SENSOR -> DeviceType.MOTION_SENSOR;
+            case TEMPERATURE_SENSOR -> DeviceType.TEMPERATURE_SENSOR;
+            case LIGHT_SENSOR -> DeviceType.LIGHT_SENSOR;
+            case CLIMATE_SENSOR -> DeviceType.CLIMATE_SENSOR;
+            case SWITCH_SENSOR -> DeviceType.SWITCH_SENSOR;
+            case DEVICE_TYPE_PROTO_UNSPECIFIED, UNRECOGNIZED ->
+                    throw new IllegalArgumentException("Unsupported device type: " + typeProto);
+        };
+    }
+
+    private ConditionType mapConditionType(ConditionTypeProto typeProto) {
+        return switch (typeProto) {
+            case MOTION -> ConditionType.MOTION;
+            case LUMINOSITY -> ConditionType.LUMINOSITY;
+            case SWITCH -> ConditionType.SWITCH;
+            case TEMPERATURE -> ConditionType.TEMPERATURE;
+            case CO2LEVEL -> ConditionType.CO2LEVEL;
+            case HUMIDITY -> ConditionType.HUMIDITY;
+            case CONDITION_TYPE_PROTO_UNSPECIFIED, UNRECOGNIZED ->
+                    throw new IllegalArgumentException("Unsupported condition type: " + typeProto);
+        };
+    }
+
+    private ConditionOperation mapConditionOperation(ConditionOperationProto operationProto) {
+        return switch (operationProto) {
+            case EQUALS -> ConditionOperation.EQUALS;
+            case GREATER_THAN -> ConditionOperation.GREATER_THAN;
+            case LOWER_THAN -> ConditionOperation.LOWER_THAN;
+            case CONDITION_OPERATION_PROTO_UNSPECIFIED, UNRECOGNIZED ->
+                    throw new IllegalArgumentException("Unsupported condition operation: " + operationProto);
+        };
+    }
+
+    private ActionType mapActionType(ActionTypeProto typeProto) {
+        return switch (typeProto) {
+            case ACTIVATE -> ActionType.ACTIVATE;
+            case DEACTIVATE -> ActionType.DEACTIVATE;
+            case INVERSE -> ActionType.INVERSE;
+            case SET_VALUE -> ActionType.SET_VALUE;
+            case ACTION_TYPE_PROTO_UNSPECIFIED, UNRECOGNIZED ->
+                    throw new IllegalArgumentException("Unsupported action type: " + typeProto);
+        };
     }
 
     private Instant toInstant(boolean hasTimestamp, Timestamp timestamp) {
