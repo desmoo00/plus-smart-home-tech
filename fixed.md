@@ -1,0 +1,9 @@
+Created fixed.md for 7-spring-cloud-microservices changes.
+Added interaction-api module to share DTO classes and Feign contracts between commerce services.
+Added shopping-store module with product CRUD, quantity state updates, soft delete, Config Server, and Eureka support.
+Added shopping-cart module with cart operations, warehouse Feign call, Circuit Breaker configuration, Config Server, and Eureka support.
+Added warehouse module with stock management, stock booking check, random warehouse address, Config Server, and Eureka support.
+Updated commerce parent POM to include interaction-api, shopping-store, shopping-cart, and warehouse modules.
+Updated Config Server search paths to include commerce service configuration files.
+Added external Config Server YAML files for shopping-store, shopping-cart, and warehouse.
+Handled Circuit Breaker no-fallback errors in shopping-cart as warehouse unavailable responses.

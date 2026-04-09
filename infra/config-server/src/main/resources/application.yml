@@ -8,10 +8,11 @@ spring:
     active: native
   cloud:
     config:
-      server:
-        native:
-          search-locations:
-            - classpath:/config/telemetry/{application}
+          server:
+            native:
+              search-locations:
+                - classpath:/config/telemetry/{application}
+                - classpath:/config/commerce/{application}
 
 eureka:
   client:
