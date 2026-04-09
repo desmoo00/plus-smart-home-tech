@@ -43,7 +43,13 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 @SpringBootTest(properties = {
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "grpc.server.port=0"
+        "spring.cloud.config.enabled=false",
+        "eureka.client.enabled=false",
+        "grpc.server.port=0",
+        "collector.topics.sensors=telemetry.sensors.v1",
+        "collector.topics.hubs=telemetry.hubs.v1",
+        "collector.topics.partitions=1",
+        "collector.topics.replicas=1"
 })
 @EmbeddedKafka(partitions = 1, topics = {"telemetry.sensors.v1", "telemetry.hubs.v1"})
 @Import(EventControllerGrpcIntegrationTest.GrpcPortTestConfiguration.class)
