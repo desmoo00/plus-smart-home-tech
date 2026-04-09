@@ -6,39 +6,40 @@ import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
+option java_outer_classname = "HubEventProtoOuterClass";
 
 enum DeviceTypeProto {
-  DEVICE_TYPE_PROTO_UNSPECIFIED = 0;
-  MOTION_SENSOR = 1;
-  TEMPERATURE_SENSOR = 2;
-  LIGHT_SENSOR = 3;
-  CLIMATE_SENSOR = 4;
-  SWITCH_SENSOR = 5;
+  MOTION_SENSOR = 0;
+  TEMPERATURE_SENSOR = 1;
+  LIGHT_SENSOR = 2;
+  CLIMATE_SENSOR = 3;
+  SWITCH_SENSOR = 4;
+  DEVICE_TYPE_PROTO_UNSPECIFIED = 99;
 }
 
 enum ConditionTypeProto {
-  CONDITION_TYPE_PROTO_UNSPECIFIED = 0;
-  MOTION = 1;
-  LUMINOSITY = 2;
-  SWITCH = 3;
-  TEMPERATURE = 4;
-  CO2LEVEL = 5;
-  HUMIDITY = 6;
+  MOTION = 0;
+  LUMINOSITY = 1;
+  SWITCH = 2;
+  TEMPERATURE = 3;
+  CO2LEVEL = 4;
+  HUMIDITY = 5;
+  CONDITION_TYPE_PROTO_UNSPECIFIED = 99;
 }
 
 enum ConditionOperationProto {
-  CONDITION_OPERATION_PROTO_UNSPECIFIED = 0;
-  EQUALS = 1;
-  GREATER_THAN = 2;
-  LOWER_THAN = 3;
+  EQUALS = 0;
+  GREATER_THAN = 1;
+  LOWER_THAN = 2;
+  CONDITION_OPERATION_PROTO_UNSPECIFIED = 99;
 }
 
 enum ActionTypeProto {
-  ACTION_TYPE_PROTO_UNSPECIFIED = 0;
-  ACTIVATE = 1;
-  DEACTIVATE = 2;
-  INVERSE = 3;
-  SET_VALUE = 4;
+  ACTIVATE = 0;
+  DEACTIVATE = 1;
+  INVERSE = 2;
+  SET_VALUE = 3;
+  ACTION_TYPE_PROTO_UNSPECIFIED = 99;
 }
 
 message DeviceAddedProto {
@@ -54,8 +55,10 @@ message ScenarioConditionProto {
   string sensor_id = 1;
   ConditionTypeProto type = 2;
   ConditionOperationProto operation = 3;
-  optional int32 int_value = 4;
-  optional bool bool_value = 5;
+  oneof value {
+    bool bool_value = 4;
+    int32 int_value = 5;
+  }
 }
 
 message DeviceActionProto {
@@ -84,4 +87,11 @@ message HubEventProto {
     ScenarioAddedProto scenario_added = 5;
     ScenarioRemovedProto scenario_removed = 6;
   }
+}
+
+message DeviceActionRequest {
+  string hub_id = 1;
+  string scenario_name = 2;
+  DeviceActionProto action = 3;
+  google.protobuf.Timestamp timestamp = 4;
 }
