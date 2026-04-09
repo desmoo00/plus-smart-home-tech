@@ -70,18 +70,34 @@ public class HubEventService {
 
     private void handleDeviceRemoved(String hubId, DeviceRemovedEventAvro event) {
         sensorRepository.findByIdAndHubId(event.getId(), hubId).ifPresent(sensor -> {
-            List<Scenario> scenarios = scenarioRepository.findByHubId(hubId);
-            for (Scenario scenario : scenarios) {
-                if (scenario.removeSensorReferences(sensor.getId())) {
-                    if (scenario.getConditions().isEmpty() || scenario.getActions().isEmpty()) {
-                        scenarioRepository.delete(scenario);
-                    } else {
-                        scenarioRepository.save(scenario);
-                    }
-                }
-            }
+            // Обрабатываем через доп. метод
+            applyScenarioUpdatesAfterSensorRemoval(hubId, sensor.getId());
             sensorRepository.delete(sensor);
         });
+    }
+
+    private void applyScenarioUpdatesAfterSensorRemoval(String hubId, String sensorId) {
+        List<Scenario> scenarios = scenarioRepository.findByHubId(hubId);
+        List<Scenario> scenariosToSave = new ArrayList<>();
+        List<Scenario> scenariosToDelete = new ArrayList<>();
+
+        for (Scenario scenario : scenarios) {
+            if (!scenario.removeSensorReferences(sensorId)) {
+                continue;
+            }
+            if (scenario.getConditions().isEmpty() || scenario.getActions().isEmpty()) {
+                scenariosToDelete.add(scenario);
+            } else {
+                scenariosToSave.add(scenario);
+            }
+        }
+
+        if (!scenariosToDelete.isEmpty()) {
+            scenarioRepository.deleteAll(scenariosToDelete);
+        }
+        if (!scenariosToSave.isEmpty()) {
+            scenarioRepository.saveAll(scenariosToSave);
+        }
     }
 
     // Новый сценарий сохраняю только когда для всех его условий и действий уже известны нужные датчики.
