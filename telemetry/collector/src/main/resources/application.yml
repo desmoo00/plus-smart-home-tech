@@ -1,20 +1,5 @@
 spring:
-  main:
-    web-application-type: none
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      acks: all
-      retries: 3
-
-grpc:
-  server:
-    port: 59091
-    reflection-service-enabled: true
-
-collector:
-  topics:
-    sensors: telemetry.sensors.v1
-    hubs: telemetry.hubs.v1
-    partitions: 1
-    replicas: 1
+  application:
+    name: collector
+  config:
+    import: configserver:http://localhost:8888
