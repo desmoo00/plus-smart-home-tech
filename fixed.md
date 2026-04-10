@@ -7,3 +7,6 @@ Updated commerce parent POM to include interaction-api, shopping-store, shopping
 Updated Config Server search paths to include commerce service configuration files.
 Added external Config Server YAML files for shopping-store, shopping-cart, and warehouse.
 Handled Circuit Breaker no-fallback errors in shopping-cart as warehouse unavailable responses.
+Removed fixed H2 driver from commerce Config Server datasource settings so CI PostgreSQL URLs can select the PostgreSQL driver.
+Added PostgreSQL JDBC runtime dependency to shopping-store, shopping-cart, and warehouse.
+Enabled Hibernate namespace creation for commerce schemas when services run against PostgreSQL.
