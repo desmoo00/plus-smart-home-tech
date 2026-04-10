@@ -19,6 +19,8 @@ import ru.yandex.practicum.commerce.store.repository.ProductRepository;
 @Service
 public class ProductService {
 
+    private static final String DEFAULT_SORT_PROPERTY = "productName";
+
     private final ProductRepository productRepository;
 
     public ProductService(ProductRepository productRepository) {
@@ -35,22 +37,20 @@ public class ProductService {
     @Transactional
     public ProductDto create(ProductDto dto) {
         Product product = ProductMapper.toEntity(dto);
-        product.setProductId(dto.productId() == null ? UUID.randomUUID() : dto.productId());
+        product.setProductId(getProductIdForCreate(dto));
         return ProductMapper.toDto(productRepository.save(product));
     }
 
     @Transactional
     public ProductDto update(ProductDto dto) {
-        Product product = productRepository.findById(dto.productId())
-                .orElseThrow(() -> new ProductNotFoundException(dto.productId()));
+        Product product = findProduct(dto.productId());
         ProductMapper.updateEntity(product, dto);
         return ProductMapper.toDto(productRepository.save(product));
     }
 
     @Transactional
     public boolean remove(UUID productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException(productId));
+        Product product = findProduct(productId);
         product.setProductState(ProductState.DEACTIVATE);
         productRepository.save(product);
         return true;
@@ -58,8 +58,7 @@ public class ProductService {
 
     @Transactional
     public boolean setQuantityState(UUID productId, QuantityState quantityState) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException(productId));
+        Product product = findProduct(productId);
         product.setQuantityState(quantityState);
         productRepository.save(product);
         return true;
@@ -67,20 +66,34 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDto getProduct(UUID productId) {
+        return ProductMapper.toDto(findProduct(productId));
+    }
+
+    // Клиент отправляет сортировку в виде списка типа ["цена", "описание"], поэтому мы преобразуем ее в Spring сортировку
+    private Sort parseSort(List<String> sort) {
+        if (sort == null || sort.isEmpty()) {
+            return Sort.by(DEFAULT_SORT_PROPERTY).ascending();
+        }
+        return Sort.by(getSortDirection(sort), getSortProperty(sort));
+    }
+
+    private UUID getProductIdForCreate(ProductDto dto) {
+        return dto.productId() == null ? UUID.randomUUID() : dto.productId();
+    }
+
+    private Product findProduct(UUID productId) {
         return productRepository.findById(productId)
-                .map(ProductMapper::toDto)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
     }
 
-    // The client sends sort as a list like ["price", "desc"], so we convert it to Spring Sort.
-    private Sort parseSort(List<String> sort) {
-        if (sort == null || sort.isEmpty()) {
-            return Sort.by("productName").ascending();
+    private String getSortProperty(List<String> sort) {
+        return sort.get(0);
+    }
+
+    private Sort.Direction getSortDirection(List<String> sort) {
+        if (sort.size() <= 1) {
+            return Sort.Direction.ASC;
         }
-        String property = sort.get(0);
-        Sort.Direction direction = sort.size() > 1
-                ? Sort.Direction.fromOptionalString(sort.get(1)).orElse(Sort.Direction.ASC)
-                : Sort.Direction.ASC;
-        return Sort.by(direction, property);
+        return Sort.Direction.fromOptionalString(sort.get(1)).orElse(Sort.Direction.ASC);
     }
 }

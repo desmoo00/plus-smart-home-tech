@@ -38,11 +38,7 @@ public class ShoppingCartService {
     public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
         validateUsername(username);
         ShoppingCart cart = getOrCreateActiveCart(username);
-        products.forEach((productId, quantity) -> {
-            if (quantity != null && quantity > 0) {
-                cart.getProducts().merge(productId, quantity, Long::sum);
-            }
-        });
+        addPositiveProducts(cart, products);
         verifyWarehouseAvailability(cart);
         return ShoppingCartMapper.toDto(cartRepository.save(cart));
     }
@@ -60,12 +56,7 @@ public class ShoppingCartService {
     public ShoppingCartDto removeProducts(String username, List<UUID> productIds) {
         validateUsername(username);
         ShoppingCart cart = getOrCreateActiveCart(username);
-        boolean removed = productIds.stream()
-                .map(cart.getProducts()::remove)
-                .anyMatch(quantity -> quantity != null);
-        if (!removed) {
-            throw new NoProductsInShoppingCartException();
-        }
+        removeProductsFromCart(cart, productIds);
         return ShoppingCartMapper.toDto(cartRepository.save(cart));
     }
 
@@ -73,26 +64,50 @@ public class ShoppingCartService {
     public ShoppingCartDto changeQuantity(String username, ChangeProductQuantityRequest request) {
         validateUsername(username);
         ShoppingCart cart = getOrCreateActiveCart(username);
-        if (!cart.getProducts().containsKey(request.productId())) {
-            throw new NoProductsInShoppingCartException();
-        }
-        cart.getProducts().put(request.productId(), request.newQuantity());
+        changeProductQuantity(cart, request);
         verifyWarehouseAvailability(cart);
         return ShoppingCartMapper.toDto(cartRepository.save(cart));
     }
 
     private ShoppingCart getOrCreateActiveCart(String username) {
-        return cartRepository.findFirstByUsernameAndActiveTrue(username).orElseGet(() -> {
-            ShoppingCart cart = new ShoppingCart();
-            cart.setShoppingCartId(UUID.randomUUID());
-            cart.setUsername(username);
-            cart.setActive(true);
-            cart.setProducts(new HashMap<>());
-            return cartRepository.save(cart);
+        return cartRepository.findFirstByUsernameAndActiveTrue(username)
+                .orElseGet(() -> createActiveCart(username));
+    }
+
+    private ShoppingCart createActiveCart(String username) {
+        ShoppingCart cart = new ShoppingCart();
+        cart.setShoppingCartId(UUID.randomUUID());
+        cart.setUsername(username);
+        cart.setActive(true);
+        cart.setProducts(new HashMap<>());
+        return cartRepository.save(cart);
+    }
+
+    private void addPositiveProducts(ShoppingCart cart, Map<UUID, Long> products) {
+        products.forEach((productId, quantity) -> {
+            if (quantity != null && quantity > 0) {
+                cart.getProducts().merge(productId, quantity, Long::sum);
+            }
         });
     }
 
-    // Before saving cart changes, ask warehouse if all selected products are available.
+    private void removeProductsFromCart(ShoppingCart cart, List<UUID> productIds) {
+        boolean removed = productIds.stream()
+                .map(cart.getProducts()::remove)
+                .anyMatch(quantity -> quantity != null);
+        if (!removed) {
+            throw new NoProductsInShoppingCartException();
+        }
+    }
+
+    private void changeProductQuantity(ShoppingCart cart, ChangeProductQuantityRequest request) {
+        if (!cart.getProducts().containsKey(request.productId())) {
+            throw new NoProductsInShoppingCartException();
+        }
+        cart.getProducts().put(request.productId(), request.newQuantity());
+    }
+
+    // Проверяем наличие товаров на складе
     private void verifyWarehouseAvailability(ShoppingCart cart) {
         try {
             warehouseClient.checkProductQuantityEnoughForShoppingCart(ShoppingCartMapper.toDto(cart));
