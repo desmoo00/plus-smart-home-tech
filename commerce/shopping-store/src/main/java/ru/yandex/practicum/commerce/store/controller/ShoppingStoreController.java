@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.commerce.api.store.ProductCategory;
 import ru.yandex.practicum.commerce.api.store.ProductDto;
-import ru.yandex.practicum.commerce.api.store.SetProductQuantityStateRequest;
+import ru.yandex.practicum.commerce.api.store.QuantityState;
 import ru.yandex.practicum.commerce.api.store.ShoppingStoreClient;
 import ru.yandex.practicum.commerce.store.service.ProductService;
 
@@ -41,8 +41,8 @@ public class ShoppingStoreController implements ShoppingStoreClient {
     }
 
     @Override
-    public Boolean setProductQuantityState(@Valid SetProductQuantityStateRequest request) {
-        return productService.setQuantityState(request);
+    public Boolean setProductQuantityState(UUID productId, QuantityState quantityState) {
+        return productService.setQuantityState(productId, quantityState);
     }
 
     @Override

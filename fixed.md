@@ -10,3 +10,7 @@ Handled Circuit Breaker no-fallback errors in shopping-cart as warehouse unavail
 Removed fixed H2 driver from commerce Config Server datasource settings so CI PostgreSQL URLs can select the PostgreSQL driver.
 Added PostgreSQL JDBC runtime dependency to shopping-store, shopping-cart, and warehouse.
 Enabled Hibernate namespace creation for commerce schemas when services run against PostgreSQL.
+Changed shopping-store quantityState endpoint to accept productId and quantityState as query parameters for Postman compatibility.
+Changed shopping-store category listing to return products from the category regardless of ACTIVE or DEACTIVATE state.
+Changed warehouse cart check so it validates stock and calculates booking data without subtracting quantities on every cart update.
+Reduced shopping-cart Eureka registry fetch interval so Feign sees warehouse faster during CI startup.

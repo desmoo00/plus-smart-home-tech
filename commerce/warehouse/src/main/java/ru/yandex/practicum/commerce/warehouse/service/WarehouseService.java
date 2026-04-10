@@ -64,7 +64,6 @@ public class WarehouseService {
         double deliveryWeight = 0;
         double deliveryVolume = 0;
         boolean fragile = false;
-        Map<WarehouseProduct, Long> productsToBook = new HashMap<>();
 
         for (Map.Entry<UUID, Long> entry : cart.products().entrySet()) {
             WarehouseProduct product = productRepository.findById(entry.getKey()).orElse(null);
@@ -77,15 +76,12 @@ public class WarehouseService {
             deliveryWeight += product.getWeight() * requested;
             deliveryVolume += product.getWidth() * product.getHeight() * product.getDepth() * requested;
             fragile = fragile || product.isFragile();
-            productsToBook.put(product, requested);
         }
 
         if (!missingProducts.isEmpty()) {
             throw new ProductInShoppingCartLowQuantityInWarehouseException(missingProducts);
         }
 
-        productsToBook.forEach((product, requested) -> product.setQuantity(product.getQuantity() - requested));
-        productRepository.saveAll(productsToBook.keySet());
         return new BookedProductsDto(deliveryWeight, deliveryVolume, fragile);
     }
 

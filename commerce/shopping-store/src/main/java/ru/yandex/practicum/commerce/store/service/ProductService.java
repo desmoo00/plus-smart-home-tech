@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.commerce.api.store.ProductCategory;
 import ru.yandex.practicum.commerce.api.store.ProductDto;
 import ru.yandex.practicum.commerce.api.store.ProductState;
-import ru.yandex.practicum.commerce.api.store.SetProductQuantityStateRequest;
+import ru.yandex.practicum.commerce.api.store.QuantityState;
 import ru.yandex.practicum.commerce.store.exception.ProductNotFoundException;
 import ru.yandex.practicum.commerce.store.model.Product;
 import ru.yandex.practicum.commerce.store.repository.ProductRepository;
@@ -28,7 +28,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductDto> getProducts(ProductCategory category, int page, int size, List<String> sort) {
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-        return productRepository.findByProductCategoryAndProductState(category, ProductState.ACTIVE, pageable)
+        return productRepository.findByProductCategory(category, pageable)
                 .map(ProductMapper::toDto);
     }
 
@@ -57,10 +57,10 @@ public class ProductService {
     }
 
     @Transactional
-    public boolean setQuantityState(SetProductQuantityStateRequest request) {
-        Product product = productRepository.findById(request.productId())
-                .orElseThrow(() -> new ProductNotFoundException(request.productId()));
-        product.setQuantityState(request.quantityState());
+    public boolean setQuantityState(UUID productId, QuantityState quantityState) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+        product.setQuantityState(quantityState);
         productRepository.save(product);
         return true;
     }
