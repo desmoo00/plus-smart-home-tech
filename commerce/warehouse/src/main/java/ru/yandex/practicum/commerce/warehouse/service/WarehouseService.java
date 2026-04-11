@@ -49,12 +49,13 @@ public class WarehouseService {
     // Проверка товаров на наличие, иначе резервируем
     public BookedProductsDto checkAndBook(ShoppingCartDto cart) {
         Map<UUID, Long> missingProducts = new HashMap<>();
+        Map<UUID, WarehouseProduct> products = loadProductsById(cart);
         double deliveryWeight = 0;
         double deliveryVolume = 0;
         boolean fragile = false;
 
         for (Map.Entry<UUID, Long> entry : cart.products().entrySet()) {
-            WarehouseProduct product = findProductOrNull(entry.getKey());
+            WarehouseProduct product = products.get(entry.getKey());
             long requested = entry.getValue();
             if (hasNotEnoughQuantity(product, requested)) {
                 addMissingProduct(missingProducts, entry.getKey(), product, requested);
@@ -100,8 +101,13 @@ public class WarehouseService {
                 .orElseThrow(() -> new NoSpecifiedProductInWarehouseException(productId));
     }
 
-    private WarehouseProduct findProductOrNull(UUID productId) {
-        return productRepository.findById(productId).orElse(null);
+    // Сначала забираем все товары корзины одним запросом, чтобы не ходить в базу внутри цикла.
+    private Map<UUID, WarehouseProduct> loadProductsById(ShoppingCartDto cart) {
+        Map<UUID, WarehouseProduct> products = new HashMap<>();
+        for (WarehouseProduct product : productRepository.findAllById(cart.products().keySet())) {
+            products.put(product.getProductId(), product);
+        }
+        return products;
     }
 
     private void addQuantity(WarehouseProduct product, long quantity) {
