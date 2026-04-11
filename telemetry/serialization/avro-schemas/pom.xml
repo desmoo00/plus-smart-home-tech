@@ -16,34 +16,46 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>schemas</id>
+                        <id>generate-avro-sources</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>idl-protocol</goal>
+                            <goal>schema</goal>
                         </goals>
                         <configuration>
-                            <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
-                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                            <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
                             <stringType>String</stringType>
+                            <createSetters>true</createSetters>
+                            <fieldVisibility>PRIVATE</fieldVisibility>
+                            <imports>
+                                <import>${project.basedir}/src/main/avro/DeviceTypeAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ConditionTypeAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ConditionOperationAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ActionTypeAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/DeviceAddedEventAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/DeviceRemovedEventAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ScenarioConditionAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/DeviceActionAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ScenarioAddedEventAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ScenarioRemovedEventAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/ClimateSensorAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/LightSensorAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/MotionSensorAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/SwitchSensorAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/TemperatureSensorAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/SensorStateAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/SensorsSnapshotAvro.avsc</import>
+                                <import>${project.basedir}/src/main/avro/HubSnapshotAvro.avsc</import>
+                            </imports>
                         </configuration>
                     </execution>
                 </executions>
@@ -62,7 +74,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>${project.build.directory}/generated-sources</source>
+                                <source>${project.build.directory}/generated-sources/avro</source>
                             </sources>
                         </configuration>
                     </execution>

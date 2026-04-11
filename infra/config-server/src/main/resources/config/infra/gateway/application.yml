@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: shopping-cart-route
+          uri: lb://shopping-cart
+          predicates:
+            - Path=/shopping-cart,/shopping-cart/**
+          filters:
+            - PrefixPath=/api/v1
+        - id: shopping-store-route
+          uri: lb://shopping-store
+          predicates:
+            - Path=/shopping-store,/shopping-store/**
+          filters:
+            - PrefixPath=/api/v1
+            - name: Retry
+              args:
+                retries: 3
+                statuses:
+                  - NOT_FOUND
+                methods:
+                  - GET
+        - id: order-route
+          uri: lb://order
+          predicates:
+            - Path=/order,/order/**
+          filters:
+            - PrefixPath=/api/v1
+        - id: payment-route
+          uri: lb://payment
+          predicates:
+            - Path=/payment,/payment/**
+          filters:
+            - PrefixPath=/api/v1
+        - id: delivery-route
+          uri: lb://delivery
+          predicates:
+            - Path=/delivery,/delivery/**
+          filters:
+            - PrefixPath=/api/v1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    instance-id: ${spring.application.name}:${random.uuid}
