@@ -3,6 +3,8 @@ package ru.yandex.practicum.commerce.delivery.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.commerce.api.delivery.DeliveryDto;
@@ -17,6 +19,8 @@ import ru.yandex.practicum.commerce.delivery.repository.DeliveryRepository;
 
 @Service
 public class DeliveryService {
+
+    private static final Logger log = LoggerFactory.getLogger(DeliveryService.class);
 
     private static final BigDecimal BASE_RATE = BigDecimal.valueOf(5.0);
     private static final BigDecimal FRAGILE_RATE = BigDecimal.valueOf(0.2);
@@ -77,26 +81,64 @@ public class DeliveryService {
     @Transactional(readOnly = true)
     public BigDecimal deliveryCost(OrderDto order) {
         DeliveryEntity delivery = getByOrder(order);
-        BigDecimal result = calculateBaseDeliveryPrice(delivery);
+        int warehouseRate = getWarehouseRate(delivery);
+        boolean sameStreet = isSameStreet(delivery);
+        BigDecimal basePrice = calculateBaseDeliveryPrice(warehouseRate);
+        BigDecimal fragileExtra = BigDecimal.ZERO;
+        BigDecimal weightExtra = BigDecimal.valueOf(defaultDouble(order.deliveryWeight())).multiply(WEIGHT_RATE);
+        BigDecimal volumeExtra = BigDecimal.valueOf(defaultDouble(order.deliveryVolume())).multiply(VOLUME_RATE);
+        BigDecimal result = basePrice;
+
+        log.info(
+                "Start delivery cost calculation: orderId={}, deliveryId={}, fragile={}, deliveryWeight={}, " +
+                        "deliveryVolume={}, fromStreet={}, toStreet={}",
+                order.orderId(),
+                delivery.getDeliveryId(),
+                order.fragile(),
+                order.deliveryWeight(),
+                order.deliveryVolume(),
+                safe(delivery.getFromAddress().getStreet()),
+                safe(delivery.getToAddress().getStreet())
+        );
 
         if (Boolean.TRUE.equals(order.fragile())) {
-            result = result.add(result.multiply(FRAGILE_RATE));
+            fragileExtra = result.multiply(FRAGILE_RATE);
+            result = result.add(fragileExtra);
         }
 
-        result = result.add(BigDecimal.valueOf(defaultDouble(order.deliveryWeight())).multiply(WEIGHT_RATE));
-        result = result.add(BigDecimal.valueOf(defaultDouble(order.deliveryVolume())).multiply(VOLUME_RATE));
+        result = result.add(weightExtra);
+        result = result.add(volumeExtra);
 
-        if (!isSameStreet(delivery)) {
-            result = result.add(result.multiply(STREET_RATE));
+        BigDecimal streetExtra = BigDecimal.ZERO;
+        if (!sameStreet) {
+            streetExtra = result.multiply(STREET_RATE);
+            result = result.add(streetExtra);
         }
 
-        return result.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal finalCost = result.setScale(2, RoundingMode.HALF_UP);
+
+        log.info(
+                "Finish delivery cost calculation: orderId={}, deliveryId={}, warehouseRate={}, sameStreet={}, " +
+                        "basePrice={}, fragileExtra={}, weightExtra={}, volumeExtra={}, streetExtra={}, finalCost={}",
+                order.orderId(),
+                delivery.getDeliveryId(),
+                warehouseRate,
+                sameStreet,
+                basePrice,
+                fragileExtra,
+                weightExtra,
+                volumeExtra,
+                streetExtra,
+                finalCost
+        );
+
+        return finalCost;
     }
 
     // Вспомогательный метод: рассчитывает базовую стоимость доставки
     // на основе базового тарифа и коэффициента склада (адреса отправки).
-    private BigDecimal calculateBaseDeliveryPrice(DeliveryEntity delivery) {
-        BigDecimal warehousePart = BASE_RATE.multiply(BigDecimal.valueOf(getWarehouseRate(delivery)));
+    private BigDecimal calculateBaseDeliveryPrice(int warehouseRate) {
+        BigDecimal warehousePart = BASE_RATE.multiply(BigDecimal.valueOf(warehouseRate));
         return BASE_RATE.add(warehousePart);
     }
 
